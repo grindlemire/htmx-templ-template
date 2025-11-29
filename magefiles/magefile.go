@@ -21,148 +21,48 @@ type Config struct {
 	Args []string `envconfig:"args"    default:""`
 }
 
-func Install() (err error) {
-	defer func(now time.Time) {
+// withBoilerplate wraps mage commands with panic recovery, timing, and context setup
+func withBoilerplate(fn func(context.Context) error) (err error) {
+	start := time.Now()
+	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Errorf("%s", r)
 		}
-		finish(now, err)
-	}(time.Now())
+		finish(start, err)
+	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// ignore the first two args since they are "mage" and "init"
-	return install(WithConfig(ctx, os.Args[2:]...))
+	return fn(WithConfig(ctx, os.Args[2:]...))
 }
+
+// Install will install all dependencies
+func Install() error { return withBoilerplate(install) }
 
 // Tidy will run go mod tidy
-func Tidy() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "tidy"
-	return tidy(WithConfig(ctx, os.Args[2:]...))
-}
+func Tidy() error { return withBoilerplate(tidy) }
 
 // Build will build a new binary
-func Build() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "build"
-	return build(WithConfig(ctx, os.Args[2:]...))
-}
+func Build() error { return withBoilerplate(build) }
 
 // Run will run a local dev server and UI
-func Run() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "run"
-	return run(WithConfig(ctx, os.Args[2:]...))
-}
+func Run() error { return withBoilerplate(run) }
 
 // Templ will run the templ command and generate the go code for the templates
-func Templ() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "templ"
-	return templ(WithConfig(ctx, os.Args[2:]...))
-}
+func Templ() error { return withBoilerplate(templ) }
 
 // Deploy will deploy the static site to Firebase hosting
-func Deploy() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "deploy"
-	return deploy(WithConfig(ctx, os.Args[2:]...))
-}
+func Deploy() error { return withBoilerplate(deploy) }
 
 // Auth will authenticate with cloud services (gcloud or firebase)
-func Auth() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "auth"
-	return auth(WithConfig(ctx, os.Args[2:]...))
-}
+func Auth() error { return withBoilerplate(auth) }
 
 // Release will deploy a specific version of the service to Cloud Run
-func Release() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "release"
-	return release(WithConfig(ctx, os.Args[2:]...))
-}
+func Release() error { return withBoilerplate(release) }
 
 // Destroy will delete all remote cloud infrastructure created during deploy
-func Destroy() (err error) {
-	defer func(now time.Time) {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%s", r)
-		}
-		finish(now, err)
-	}(time.Now())
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// ignore the first two args since they are "mage" and "destroy"
-	return destroy(WithConfig(ctx, os.Args[2:]...))
-}
+func Destroy() error { return withBoilerplate(destroy) }
 
 func finish(start time.Time, err error) {
 	zap.S().Infof("elapsed time: %s", time.Since(start))

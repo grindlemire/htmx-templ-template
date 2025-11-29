@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/grindlemire/gothem-stack/web/pages/authfail"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -32,10 +33,17 @@ func Error(err error, c echo.Context) {
 	message := he.Message
 
 	// only log unauthorized errors at the debug level
-	if !errors.Is(he, echo.ErrUnauthorized) {
+	if he.Code != http.StatusUnauthorized {
 		zap.S().Error(err)
 	} else {
 		zap.S().Debug(err)
+		// render the auth fail page for unauthorized errors
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		renderErr := render(c, authfail.Page())
+		if renderErr != nil {
+			zap.S().Error(errors.Wrap(renderErr, "rendering auth fail page"))
+		}
+		return
 	}
 
 	switch m := he.Message.(type) {

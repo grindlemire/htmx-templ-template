@@ -2,68 +2,53 @@ package home
 
 import "github.com/grindlemire/gothem-stack/web/components/page"
 
-templ Page() {
+templ Page(username string) {
 	@page.Base("home") {
-		<div class="flex items-center justify-center min-h-screen">
-			<div class="card w-94 bg-base-100 shadow-xl">
-				<div class="card-body">
-					<h2 class="card-title">Generate Random Strings using an HTMX call:</h2>
-					<div class="card-actions justify-center">
-						<button
-							class="btn btn-primary"
-							hx-get="/random-string"
-							hx-target="#random-string"
-							hx-swap="outerHTML swap:300ms"
-							hx-indicator="#loading-spinner"
-							_="on click 
-								add .opacity-0 to #random-string
-								wait 150ms
-								set #random-string.innerHTML to ''"
-						>
-							Generate
-						</button>
-					</div>
-					<div class="relative">
-						<div
-							id="random-string"
-							class="h-8 flex items-center justify-center pt-4 whitespace-nowrap transition-opacity duration-300 ease-in-out"
-						></div>
-						<div
-							id="loading-spinner"
-							class="htmx-indicator loading loading-spinner loading-md absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 ease-in-out"
-						></div>
-					</div>
-					<!-- Alpine.js Counter Example -->
-					<div class="mt-8 border-t pt-4" x-data="{ count: 0 }">
-						<h3 class="text-lg font-semibold mb-4">Alpine.js Counter:</h3>
-						<div class="flex flex-col items-center gap-4">
-							<div class="text-2xl font-bold" x-text="count"></div>
-							<div class="flex gap-2">
-								<button
-									class="btn btn-sm"
-									x-on:click="count--"
-								>
-									Decrease
-								</button>
-								<button
-									class="btn btn-sm btn-primary"
-									x-on:click="count++"
-								>
-									Increase
-								</button>
-							</div>
-							<!-- Theme Toggle -->
-							<div class="form-control">
-								<label class="label cursor-pointer gap-2">
-									<span class="label-text">Dark Mode</span>
-									<input
-										type="checkbox"
-										class="toggle"
-										x-model="isDark"
-									/>
-								</label>
-							</div>
-						</div>
+		<div class="min-h-screen flex flex-col">
+			<!-- Top bar -->
+			<div class="navbar bg-base-100 border-b border-base-200">
+				<div class="flex-1">
+					<a class="btn btn-ghost text-xl normal-case">Gothem Stack</a>
+				</div>
+				<div class="flex-none gap-4">
+					@userStatus(username)
+					@themeToggle()
+				</div>
+			</div>
+			<!-- Main content -->
+			<main class="flex-1 container mx-auto px-6 py-12 max-w-2xl">
+				<!-- Demo sections -->
+				<div class="space-y-12">
+					@htmxSection()
+					<div class="divider">✦</div>
+					@alpineSection()
+				</div>
+			</main>
+			<!-- Footer -->
+			<footer class="footer footer-center p-4 bg-base-200 text-base-content/60">
+				<aside>
+					<p class="text-sm">Built with Go, Templ, HTMX, Echo & Mage</p>
+				</aside>
+			</footer>
+		</div>
+	}
+}
+
+templ userStatus(username string) {
+	if username != "" {
+		<div class="badge badge-success gap-2">
+			<div class="w-2 h-2 rounded-full bg-success-content animate-pulse"></div>
+			{ username }
+		</div>
+	} else {
+		<div class="dropdown dropdown-end">
+			<div tabindex="0" class="badge badge-ghost cursor-help">Signed out</div>
+			<div tabindex="0" class="dropdown-content z-10 card card-compact w-64 p-2 shadow bg-base-100">
+				<div class="card-body text-sm space-y-2">
+					<p>Try these query params:</p>
+					<div class="space-y-1">
+						<div><code class="text-xs bg-base-200 px-1 rounded">?username=foo</code> — simulated auth</div>
+						<div><code class="text-xs bg-base-200 px-1 rounded">?username=reject</code> — auth failure</div>
 					</div>
 				</div>
 			</div>
@@ -71,11 +56,109 @@ templ Page() {
 	}
 }
 
+templ themeToggle() {
+	<label class="swap swap-rotate btn btn-ghost btn-circle btn-sm" x-cloak>
+		<input
+			type="checkbox"
+			x-model="isDark"
+			x-on:change="localStorage.setItem('theme', isDark ? 'dark' : 'light')"
+		/>
+		<span class="swap-off i-mdi-white-balance-sunny text-xl"></span>
+		<span class="swap-on i-mdi-moon-waning-crescent text-xl"></span>
+	</label>
+}
+
+templ htmxSection() {
+	<section class="space-y-4">
+		<div class="flex items-center gap-3">
+			<div class="badge badge-primary badge-lg">HTMX</div>
+			<h2 class="text-lg font-semibold">Server-Side Generation</h2>
+		</div>
+		<p class="text-base-content/70">
+			Click the button to fetch a random string from the server with a built-in delay to
+			demonstrate the loading spinner. The response replaces the content below using HTMX swapping.
+		</p>
+		<div class="flex flex-col items-center gap-4 py-4">
+			<button
+				class="btn btn-primary"
+				hx-get="/random-string"
+				hx-target="#random-string"
+				hx-swap="outerHTML swap:200ms"
+				hx-indicator="#loading-spinner"
+				_="on click 
+					add .opacity-0 to #random-string
+					wait 100ms
+					set #random-string.innerHTML to ''"
+			>
+				<span class="i-mdi-dice-multiple lg:text-2xl"></span>
+				Generate Random String
+			</button>
+			<div class="relative min-h-[3rem] flex items-center justify-center w-full">
+				<div
+					id="random-string"
+					class="font-mono text-lg tracking-wide transition-opacity duration-200"
+				></div>
+				<span
+					id="loading-spinner"
+					class="htmx-indicator loading loading-spinner loading-md text-primary absolute"
+				></span>
+			</div>
+		</div>
+	</section>
+}
+
+templ alpineSection() {
+	<section class="space-y-4" x-data="{ count: 0 }">
+		<div class="flex items-center gap-3">
+			<div class="badge badge-secondary badge-lg">Alpine.js</div>
+			<h2 class="text-lg font-semibold">Client-Side Reactivity</h2>
+		</div>
+		<p class="text-base-content/70">
+			A simple counter demonstrating Alpine.js reactive state. All changes happen instantly in the browser.
+		</p>
+		<div class="flex flex-col items-center gap-6 py-4">
+			<!-- Counter display -->
+			<div class="stats shadow">
+				<div class="stat">
+					<div class="stat-title">Current Count</div>
+					<div class="stat-value text-center tabular-nums" x-text="count"></div>
+					<div class="stat-desc text-center">
+						<span x-show="count > 0" x-transition>↑ positive</span>
+						<span x-show="count < 0" x-transition>↓ negative</span>
+						<span x-show="count === 0" x-transition>neutral</span>
+					</div>
+				</div>
+			</div>
+			<!-- Controls -->
+			<div class="join">
+				<button
+					class="btn join-item"
+					x-on:click="count--"
+				>
+					<span class="i-mdi-minus"></span>
+				</button>
+				<button
+					class="btn join-item"
+					x-on:click="count = 0"
+				>
+					Reset
+				</button>
+				<button
+					class="btn join-item"
+					x-on:click="count++"
+				>
+					<span class="i-mdi-plus"></span>
+				</button>
+			</div>
+		</div>
+	</section>
+}
+
 templ RandomString(s string) {
 	<div
 		id="random-string"
-		class="h-8 flex items-center justify-center pt-4 whitespace-nowrap text-lg transition-opacity duration-300 ease-in-out"
-		_="on load wait 10ms then add .opacity-100"
+		class="font-mono text-lg tracking-wide opacity-0 transition-opacity duration-200 badge badge-outline badge-lg py-4 px-6"
+		_="on load wait 10ms then remove .opacity-0"
 	>
 		GS2-{ s }
 	</div>

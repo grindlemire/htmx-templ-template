@@ -1,0 +1,25 @@
+package authfail
+
+import "github.com/grindlemire/gothem-stack/web/components/page"
+
+templ Page() {
+	@page.Base("Unauthorized") {
+		<div class="min-h-screen flex flex-col items-center justify-center bg-base-200">
+			<div class="card bg-base-100 shadow-xl max-w-md w-full mx-4">
+				<div class="card-body items-center text-center">
+					<div class="text-6xl mb-4">🔒</div>
+					<h1 class="card-title text-2xl text-error">Unauthorized</h1>
+					<p class="text-base-content/70 mt-2">
+						Here is an example auth failure page.
+					</p>
+					<div class="card-actions mt-6">
+						<a href="/" class="btn btn-primary">
+							<span class="i-mdi-home mr-2"></span>
+							Back to Home
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

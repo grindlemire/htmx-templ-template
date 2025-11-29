@@ -11,8 +11,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Initializes the log depending on the environment
-func InitGlobal() error {
+// InitGlobal initializes the log depending on the environment
+func InitGlobal() {
 	var core zapcore.Core
 
 	var logger *zap.Logger
@@ -56,7 +56,6 @@ func InitGlobal() error {
 	}
 
 	zap.ReplaceGlobals(logger)
-	return nil
 }
 
 type stackTracer interface {

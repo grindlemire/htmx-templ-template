@@ -99,7 +99,7 @@ func generateStaticAssets(ctx context.Context) error {
 // generateHTML renders the home page and writes it to the specified path
 func generateHTML(outputPath string) error {
 	var s strings.Builder
-	if err := home.Page().Render(context.Background(), &s); err != nil {
+	if err := home.Page("").Render(context.Background(), &s); err != nil {
 		return errors.Wrap(err, "rendering static page")
 	}
 
