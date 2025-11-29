@@ -10,10 +10,11 @@ func Middleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			// obviously this is not real authentication and is just illustrative of what you can do here
-			username, _, ok := c.Request().BasicAuth()
-			if ok && username == "reject" {
-				return echo.ErrUnauthorized.SetInternal(errors.Errorf("user; %s is not authorized", username))
+			username := c.Request().URL.Query().Get("username")
+			if username == "reject" {
+				return echo.ErrUnauthorized.SetInternal(errors.Errorf("user %s is not authorized", username))
 			}
+
 			return next(c)
 		}
 	}

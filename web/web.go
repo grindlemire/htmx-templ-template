@@ -22,13 +22,14 @@ func RegisterStaticAssets(e *echo.Echo) error {
 	}
 	e.StaticFS("/dist", assets)
 
+	// read favicon once at startup for efficiency
+	favicon, err := public.ReadFile("public/favicon.ico")
+	if err != nil {
+		return errors.Wrap(err, "reading favicon")
+	}
+
 	// independently return the favicon because some robots like to pull from this path
 	e.GET("/favicon.ico", func(c echo.Context) error {
-		favicon, err := public.ReadFile("public/favicon.ico")
-		if err != nil {
-			return errors.Wrap(err, "reading favicon")
-		}
-
 		return c.Blob(http.StatusOK, "image/x-icon", favicon)
 	})
 

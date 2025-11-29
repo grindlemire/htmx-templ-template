@@ -2,24 +2,20 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 
 	"github.com/grindlemire/gothem-stack/pkg/log"
-	"github.com/grindlemire/gothem-stack/pkg/server"
+	"github.com/grindlemire/gothem-stack/pkg/nodes/server"
+	"github.com/pkg/errors"
 
+	"github.com/grindlemire/graft"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 )
 
 func main() {
-	err := log.InitGlobal()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initalize logger: %v", err)
-		os.Exit(1)
-	}
+	log.InitGlobal()
 
 	app := &cli.App{
 		Name:  "serve",
@@ -37,11 +33,19 @@ func main() {
 				<-sigCh
 				cancel()
 			}()
-			return server.Run(ctx)
+
+			// execute the server node which will run all the server dependencies
+			// and start the server. It will return an error if it fails to run.
+			output, _, err := graft.ExecuteFor[server.Output](ctx)
+			if err != nil {
+				return errors.Wrap(err, "server execution failed")
+			}
+
+			return errors.Wrap(output.Err, "server run failed")
 		},
 	}
 
-	err = app.Run(os.Args)
+	err := app.Run(os.Args)
 	if err != nil {
 		// we don't care about context cancellation as that happens if we kill the process
 		// while it is waiting for a request to finish

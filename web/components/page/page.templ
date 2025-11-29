@@ -19,6 +19,7 @@ templ Base(name string) {
 			<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			<script src="https://unpkg.com/hyperscript.org@0.9.13"></script>
 			<link rel="stylesheet" href="/dist/styles.min.css"/>
+			<style>[x-cloak] { display: none !important; }</style>
 			<script>
 				document.addEventListener('alpine:init', () => {
 					Alpine.data('theme', () => ({
